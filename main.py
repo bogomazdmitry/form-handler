@@ -55,8 +55,8 @@ async def beyoung8march(request: Request):
     try:
         data = await request.json()
 
-        image_url = generate_image("Сгеннерируй поздравление-открытку с 8 марта девушке, которая заполнила форму вот с такими данными: " 
-                                              + json.dumps(data))
+        image_url = generate_image("Сгеннерируй открытку с 8 марта девушке, которая заполнила форму вот с такими данными: " 
+                                              + json.dumps(data) + ". не в формате формы ")
         await send_telegram_photo(image_url)
 
         congratulation_text = "С 8 Марта, " + data["Как тебя зовут?"] + "! Вас поздравляет beyoung! Желаем счастья, здоровья и всего наилучшего."
