@@ -27,12 +27,6 @@ async def generate_image(prompt: str):
         quality="standard",
         n=1,
     )
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            OPENAI_URL,
-            headers={"Authorization": f"Bearer {CHAT_GPT_KEY}"},
-            json={"prompt": prompt, "n": 1, "size": "1024x1024"}
-        )
     return response.json()
 
 async def send_telegram_message(text: str):
