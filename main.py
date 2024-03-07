@@ -27,7 +27,14 @@ def generate_image(prompt: str):
     )
 
     print(response)
-    return response['data'][0]['url']
+    if response.data and len(response.data) > 0:
+        image_url = response.data[0].url  # Adjusted to use attribute access
+        return image_url
+    else:
+        # Handle case where no image is generated or response is unexpected
+        print("No image was generated or unexpected response format.")
+        return None
+
 
 async def send_telegram_message(text: str):
     async with httpx.AsyncClient() as client:
