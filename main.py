@@ -39,11 +39,11 @@ async def send_telegram_photo(photo_url: str):
 async def beyoung8march(request: Request):
     data = await request.json()
 
-    image_response = await generate_image("Сгеннерируй поздравление-открытку с 8 марта девушке, которая заполнила форму вот с такими данными: " 
-                                          + json.dumps(data))
-    image_url = image_response['data'][0]['url']
+    # image_response = await generate_image("Сгеннерируй поздравление-открытку с 8 марта девушке, которая заполнила форму вот с такими данными: " 
+    #                                       + json.dumps(data))
+    # image_url = image_response['data'][0]['url']
 
-    await send_telegram_photo(image_url)
+    await send_telegram_photo("https://www.google.ru/url?sa=i&url=https%3A%2F%2Fsitechecker.pro%2Fwhat-is-422-status-code%2F&psig=AOvVaw2jIJ7uMazcVUkiyNzfpWuz&ust=1709927627043000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCMit7ff24oQDFQAAAAAdAAAAABAE")
 
     congratulation_text = "С 8 Марта, " + data["Как тебя зовут?"] + "! Желаем счастья, здоровья и всего наилучшего."
     await send_telegram_message(congratulation_text)
