@@ -26,7 +26,9 @@ async def generate_image(prompt: str):
         quality="standard",
         n=1,
     )
-    return response
+
+    print(response)
+    return response['data'][0]['url']
 
 async def send_telegram_message(text: str):
     async with httpx.AsyncClient() as client:
@@ -47,17 +49,8 @@ async def beyoung8march(request: Request):
     try:
         data = await request.json()
 
-        image_response = await generate_image("Сгеннерируй поздравление-открытку с 8 марта девушке, которая заполнила форму вот с такими данными: " 
+        image_url = await generate_image("Сгеннерируй поздравление-открытку с 8 марта девушке, которая заполнила форму вот с такими данными: " 
                                               + json.dumps(data))
-
-        print(image_response)
-
-        if 'data' in image_response and len(image_response['data']) > 0 and 'url' in image_response['data'][0]:
-            image_url = image_response['data'][0]['url']
-        else:
-            print("Некорректный формат ответа от API:", image_response)
-            raise HTTPException(status_code=500, detail="Ошибка при обработке ответа от API")
-
         await send_telegram_photo(image_url)
 
         congratulation_text = "С 8 Марта, " + data["Как тебя зовут?"] + "! Вас поздравляет beyoung! Желаем счастья, здоровья и всего наилучшего."
