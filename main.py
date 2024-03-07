@@ -55,7 +55,7 @@ async def beyoung8march(request: Request):
     try:
         data = await request.json()
 
-        prompt = "Сгеннерируй открытку с 8 марта девушке, которая заполнила форму вот с такими данными: " + json.dumps(data) + ". не в формате формы "
+        prompt = "Сгеннерируй открытку с 8 марта девушке, которая заполнила форму вот с такими данными: " + json.dumps(data, ensure_ascii=False) + ". не в формате формы "
         print(prompt)
 
         image_url = generate_image(prompt)
