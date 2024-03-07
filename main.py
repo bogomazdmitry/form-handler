@@ -41,7 +41,16 @@ async def beyoung8march(request: Request):
     try:
         data = await request.json()
 
-        await send_telegram_photo("https://sitechecker.pro/wp-content/uploads/2023/07/422-status-code.png")
+        image_response = await generate_image("Сгеннерируй поздравление-открытку с 8 марта девушке, которая заполнила форму вот с такими данными: " 
+                                              + json.dumps(data))
+
+        if 'data' in image_response and len(image_response['data']) > 0 and 'url' in image_response['data'][0]:
+            image_url = image_response['data'][0]['url']
+        else:
+            print("Некорректный формат ответа от API:", image_response)
+            raise HTTPException(status_code=500, detail="Ошибка при обработке ответа от API")
+
+        await send_telegram_photo(image_url)
 
         congratulation_text = "С 8 Марта, " + data["Как тебя зовут?"] + "! Вас поздравляет beyoung! Желаем счастья, здоровья и всего наилучшего."
         await send_telegram_message(congratulation_text)
