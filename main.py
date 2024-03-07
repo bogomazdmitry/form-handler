@@ -1,3 +1,4 @@
+from http.client import HTTPException
 import json
 from fastapi import FastAPI, Request
 import httpx
@@ -37,15 +38,39 @@ async def send_telegram_photo(photo_url: str):
 
 @app.post("/beyoung/v1/8-march")
 async def beyoung8march(request: Request):
-    data = await request.json()
+    try:
+        data = await request.json()
 
-    # image_response = await generate_image("Сгеннерируй поздравление-открытку с 8 марта девушке, которая заполнила форму вот с такими данными: " 
-    #                                       + json.dumps(data))
-    # image_url = image_response['data'][0]['url']
+        await send_telegram_photo("https://sitechecker.pro/wp-content/uploads/2023/07/422-status-code.png")
 
-    await send_telegram_photo("https://www.google.ru/url?sa=i&url=https%3A%2F%2Fsitechecker.pro%2Fwhat-is-422-status-code%2F&psig=AOvVaw2jIJ7uMazcVUkiyNzfpWuz&ust=1709927627043000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCMit7ff24oQDFQAAAAAdAAAAABAE")
+        congratulation_text = "С 8 Марта, " + data["Как тебя зовут?"] + "! Вас поздравляет beyoung! Желаем счастья, здоровья и всего наилучшего."
+        await send_telegram_message(congratulation_text)
 
-    congratulation_text = "С 8 Марта, " + data["Как тебя зовут?"] + "! Желаем счастья, здоровья и всего наилучшего."
-    await send_telegram_message(congratulation_text)
+        return {"message": "Data processed successfully"}
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
+        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
 
-    return {"message": "Data processed successfully"}
+
+
+async def beyoung8march(request: Request):
+    try:
+        data = await request.json()
+        image_response = await generate_image(data['prompt'])
+        
+        if 'data' in image_response and len(image_response['data']) > 0 and 'url' in image_response['data'][0]:
+            image_url = image_response['data'][0]['url']
+        else:
+            # Если структура ответа не соответствует ожидаемой, логируем и возвращаем ошибку
+            print("Некорректный формат ответа от API:", image_response)
+            raise HTTPException(status_code=500, detail="Ошибка при обработке ответа от API")
+
+        # Отправка сгенерированного изображения и текста поздравления в Telegram
+        await send_telegram_photo(image_url)
+        congratulation_text = "С 8 Марта! Желаем счастья, здоровья и всего наилучшего."
+        await send_telegram_message(congratulation_text)
+
+        return {"message": "Data processed successfully"}
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
+        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
