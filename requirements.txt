@@ -1,2 +1,3 @@
 fastapi ~= 0.103
 uvicorn[standard]
+httpx
