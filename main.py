@@ -1,4 +1,3 @@
-import string
 from typing import Optional
 
 from fastapi import FastAPI
@@ -11,5 +10,6 @@ async def root():
     return {"message": "Hello World"}
 
 @app.post("/beyoung/v1/8-march")
-def read_item(data: string):
+def beyoung8march(data):
+    print(data)
     return data
