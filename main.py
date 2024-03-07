@@ -18,7 +18,6 @@ TELEGRAM_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_KEY}"
 
 
 async def generate_image(prompt: str):
-    openai.api_key = CHAT_GPT_KEY
 
     response = client.images.generate(
         model="dall-e-3",
