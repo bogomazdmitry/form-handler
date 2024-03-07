@@ -3,8 +3,11 @@ import json
 from fastapi import FastAPI, Request
 import httpx
 import os
+from openai import OpenAI
 
+client = OpenAI()
 app = FastAPI()
+
 
 CHAT_GPT_KEY = os.getenv("CHAT_GPT_KEY")
 TELEGRAM_BOT_KEY = os.getenv("TELEGRAM_BOT_KEY")
@@ -13,7 +16,17 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 OPENAI_URL = "https://api.openai.com/v1/images/generations"
 TELEGRAM_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_KEY}"
 
+openai.api_key = CHAT_GPT_KEY
+
 async def generate_image(prompt: str):
+
+    response = client.images.generate(
+        model="dall-e-3",
+        prompt=prompt,
+        size="1024x1024",
+        quality="standard",
+        n=1,
+    )
     async with httpx.AsyncClient() as client:
         response = await client.post(
             OPENAI_URL,
