@@ -16,9 +16,9 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 OPENAI_URL = "https://api.openai.com/v1/images/generations"
 TELEGRAM_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_KEY}"
 
-openai.api_key = CHAT_GPT_KEY
 
 async def generate_image(prompt: str):
+    openai.api_key = CHAT_GPT_KEY
 
     response = client.images.generate(
         model="dall-e-3",
