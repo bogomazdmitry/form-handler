@@ -1,108 +1,43 @@
-import logging
-from http.client import HTTPException
-import json
-import sys
-from fastapi import FastAPI, Request, logger
-import httpx
-import os
-from openai import OpenAI
+from fastapi import FastAPI, HTTPException, Request
 from dotenv import load_dotenv
+import os
+import logging
+from congratulations.beyoung_8march import generate_congratulation_image, generate_congratulation_text, get_default_congratulation_text
+
+import startup
+from telegram_utils import send_telegram_message, send_telegram_photo
 
 load_dotenv()
 
-client = OpenAI()
 app = FastAPI()
+logger = logging.getLogger('uvicorn.error')
 
+startup.check_env_variables()
 
-required_vars = ["TELEGRAM_BOT_KEY", "TELEGRAM_CHAT_ID", "OPENAI_API_KEY"]
-
-missing_vars = [var for var in required_vars if not os.getenv(var)]
-if missing_vars:
-    logger.critical(f"Error: Missing environment variables: {', '.join(missing_vars)}")
-    sys.exit(1)
-
-TELEGRAM_BOT_KEY = os.getenv("TELEGRAM_BOT_KEY")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-OPENAI_URL = "https://api.openai.com/v1/images/generations"
-TELEGRAM_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_KEY}"
 
-
-def generate_image(prompt: str):
-    response = client.images.generate(
-        model="dall-e-3",
-        prompt=prompt,
-        size="1024x1024",
-        quality="standard",
-        n=1,
-    )
-    logger.info("Generate image response: " + response)
-
-    if response.data and len(response.data) > 0:
-        image_url = response.data[0].url
-        return image_url
-    else:
-        logger.critical("No image was generated or unexpected response format.")
-        return None
-
-
-async def send_telegram_message(text: str):
-    async with httpx.AsyncClient() as client:
-        await client.post(
-            f"{TELEGRAM_URL}/sendMessage",
-            json={"chat_id": TELEGRAM_CHAT_ID, "text": text}
-        )
-
-async def send_telegram_photo(photo_url: str):
-    async with httpx.AsyncClient() as client:
-        await client.post(
-            f"{TELEGRAM_URL}/sendPhoto",
-            json={"chat_id": TELEGRAM_CHAT_ID, "photo": photo_url}
-        )
-
-async def generate_congratulation(data: dict):
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4-turbo-preview",
-            messages=[
-            {
-                "role": "user",
-            "content": f"Поздравьте сотрудника от компании Beyoung с 8 Марта, который заполнил форму и получились такие ответы: {json.dumps(data, ensure_ascii=False)}",
-            }
-
-            ],
-            temperature=1.08,
-            max_tokens=597,
-            top_p=1,
-            frequency_penalty=0,
-            presence_penalty=0
-        )
-
-        return response.choices[0].message.content.strip()
-
-    except Exception as e:
-        logger.critical(f"Generating text error: {e}")
-        return None
-    
 @app.post("/beyoung/v1/8-march")
-async def beyoung8march(request: Request):
+async def beyoung_v1_8march(request: Request):
     try:
         data = await request.json()
+        if "test" not in request.query_params or not request.query_params["test"]:
+            image_url = await generate_congratulation_image(data)
+            if image_url is None:
+                logger.critical("Image didn't provided")
+                raise HTTPException(status_code=500, detail="Internal error")
+                
+            congratulation_text = await generate_congratulation_text(data)
+        else:
+            image_url = 'https://cdn.shopclues.com/images/thumbnails/79835/320/320/104787525124666394ID1006929615021796911502242942.jpg'
+            congratulation_text = get_default_congratulation_text(data)
+            
 
-        prompt = f"Сгеннерируй открытку с 8 марта девушке, которая заполнила форму вот с такими данными: {json.dumps(data, ensure_ascii=False)}. не в формате формы "
-        logger.info(f"Image prompt: {prompt}")
-
-        image_url = generate_image(prompt)
-
-        congratulation_text = await generate_congratulation(data)
-        if congratulation_text == None:
-            congratulation_text = f"С 8 Марта, {data["Как тебя зовут?"]}! Вас поздравляет beyoung! Желаем счастья, здоровья и всего наилучшего."
-            logger.warn("Congratulation text  created as default text")
-        logger.warn(f"Congratulation text: {congratulation_text}")
-        await send_telegram_photo(image_url)
-        await send_telegram_message(congratulation_text)
+        await send_telegram_photo(image_url, TELEGRAM_CHAT_ID)
+        await send_telegram_message(congratulation_text, TELEGRAM_CHAT_ID)
 
         return {"message": "Data processed successfully"}
+    
     except Exception as e:
-        logger.critical(f"Unexpected error: {e}")
-        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
+        logger.critical("Unexpected error: %s", e)
+        raise HTTPException(status_code=500, detail="Internal error")
