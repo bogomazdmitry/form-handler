@@ -51,21 +51,31 @@ async def send_telegram_photo(photo_url: str):
         )
 
 async def generate_congratulation(data: dict):
-    response = client.completions.create(
-        engine="gpt-4-turbo-preview",
-        prompt="Поздравьте сотрудника от компании Beyoung с 8 Марта, который заполнил форму и получились такие ответы: " + json.dumps(data, ensure_ascii=False),
-        temperature=1.08,
-        max_tokens=597,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
-    )
+    try:
+        response = client.completions.create(
+            engine="gpt-4-turbo-preview",
+            messages=[
+            {
+                "role": "user",
+            "content": "Поздравьте сотрудника от компании Beyoung с 8 Марта, который заполнил форму и получились такие ответы: " + json.dumps(data, ensure_ascii=False),
+            }
 
-    if response.choices and len(response.choices) > 0:
-        return response.choices[0].text.strip()
-    else:
-        print("No congratulatory text generated or unexpected response format.")
-        print(response)
+            ],
+            temperature=1.08,
+            max_tokens=597,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0
+        )
+
+        if response.choices and len(response.choices) > 0:
+            return response.choices[0].text.strip()
+        else:
+            print("No congratulatory text generated or unexpected response format.")
+            print(response)
+            return None
+    except Exception as e:
+        print(f"Произошла ошибка в генерации текста: {e}")
         return None
     
 @app.post("/beyoung/v1/8-march")
