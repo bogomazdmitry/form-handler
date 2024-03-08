@@ -2,7 +2,7 @@ import logging
 from openai import OpenAI
 
 client = OpenAI()
-logger = logging.getLogger('uvicorn.error')
+logger = logging.getLogger("uvicorn.error")
 
 OPENAI_URL = "https://api.openai.com/v1/images/generations"
 
@@ -16,7 +16,7 @@ async def generate_text(prompt: str) -> str:
             max_tokens=597,
             top_p=1,
             frequency_penalty=0,
-            presence_penalty=0
+            presence_penalty=0,
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
