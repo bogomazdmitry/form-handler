@@ -52,8 +52,8 @@ async def send_telegram_photo(photo_url: str):
 
 async def generate_congratulation(data: dict):
     try:
-        response = client.completions.create(
-            engine="gpt-4-turbo-preview",
+        response = client.chat.completions.create(
+            model="gpt-4-turbo-preview",
             messages=[
             {
                 "role": "user",
