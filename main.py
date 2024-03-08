@@ -50,6 +50,24 @@ async def send_telegram_photo(photo_url: str):
             json={"chat_id": TELEGRAM_CHAT_ID, "photo": photo_url}
         )
 
+async def generate_congratulation(data: dict):
+    response = client.completions.create(
+        engine="gpt-4-turbo-preview",
+        prompt="Поздравьте сотрудника от компании Beyoung с 8 Марта, который заполнил форму и получились такие ответы: " + json.dumps(data, ensure_ascii=False),
+        temperature=1.08,
+        max_tokens=597,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+
+    if response.choices and len(response.choices) > 0:
+        return response.choices[0].text.strip()
+    else:
+        print("No congratulatory text generated or unexpected response format.")
+        print(response)
+        return None
+    
 @app.post("/beyoung/v1/8-march")
 async def beyoung8march(request: Request):
     try:
@@ -61,7 +79,9 @@ async def beyoung8march(request: Request):
         image_url = generate_image(prompt)
         await send_telegram_photo(image_url)
 
-        congratulation_text = "С 8 Марта, " + data["Как тебя зовут?"] + "! Вас поздравляет beyoung! Желаем счастья, здоровья и всего наилучшего."
+        congratulation_text = await generate_congratulation(data)
+        if congratulation_text == None:
+            congratulation_text = "С 8 Марта, " + data["Как тебя зовут?"] + "! Вас поздравляет beyoung! Желаем счастья, здоровья и всего наилучшего."
         await send_telegram_message(congratulation_text)
 
         return {"message": "Data processed successfully"}
