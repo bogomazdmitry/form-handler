@@ -1,5 +1,15 @@
 # Form for this
 
+Simple telegram congratulation sender from chat gpt with image and text.
+
+Flow:
+
+1. Person accepts form
+2. Form sends request to POST_URL (need to set up)
+3. API send message with bot to TELEGRAM_CHAT_ID (need to deploy)
+
+My form:
+
 https://docs.google.com/forms/d/1ha0GUlMViFGe0gI-zgZMTPupxTcq1QoxGKQ7L7OW57g/edit
 
 # Script from form
